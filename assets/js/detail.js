@@ -3,6 +3,8 @@
 import { api_key, imageBaseURL, fetchDataFromServer } from "./api.js";
 import { sidebar } from "./sidebar.js";
 import { createMovieCard } from "./movie-card.js";
+import { search } from "./search.js";
+
 
 
 const movieId = window.localStorage.getItem("movieId");
@@ -14,15 +16,15 @@ sidebar();
 
 
 
-const getGenres = function(genreList) {
+const getGenres = function (genreList) {
     const newGenreList = [];
 
-    for(const { name } of genreList) newGenreList.push(name);
+    for (const { name } of genreList) newGenreList.push(name);
 
     return newGenreList.join(", ")
 }
 
-const getCasts = function(castList) {
+const getCasts = function (castList) {
     const newCastList = [];
 
     for (let i = 0, len = castList.length; i < len && i < 10; i++) {
@@ -40,6 +42,11 @@ const getDirectors = function (crewList) {
     for (const { name } of directors) directorList.push(name);
 
     return directorList.join(", ");
+}
+
+// returns only all trailers and teasers as array
+const filterVideos = function (videoList) {
+    return videoList.filter(({ type, site }) => (type === "Trailer" || type === "Teaser") && site === "YouTube");
 }
 
 
@@ -129,9 +136,52 @@ fetchDataFromServer(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${api
     `;
 
     for (const { key, name } of filterVideos(videos)) {
+        const videoCard = document.createElement("div");
+        videoCard.classList.add("video-card");
 
-        
+        videoCard.innerHTML = `
+            <iframe width="500" height="294" src="https://www.youtube.com/embed/${key}?&theme=dark&color=white&rel=0" frameborder="0" allowfullscreen="1" title="${name}" class="img-cover" loading="lazy"></iframe>
+        `;
+
+        movieDetail.querySelector(".slider-inner").appendChild(videoCard);
+    }
+
+    pageContent.appendChild(movieDetail);
+
+    fetchDataFromServer(`https://api.themoviedb.org/3/movie/${movieId}/recommendations?api_key=${api_key}&page=1`, addSuggestedMovies);
+
+});
+
+
+
+
+const addSuggestedMovies = function ({ results: movieList }, title) {
+    const movieListElem = document.createElement("section");
+    movieListElem.classList.add("movie-list");
+    movieListElem.ariaLabel = "You May Also Like";
+
+    movieListElem.innerHTML = `
+        <div class="title-wraper">
+            <h3 class="title-large">You May Also Like</h3>
+        </div>
+
+        <div class="slider-list">
+            <div class="slider-inner"></div>
+        </div>
+    `;
+
+    for (const movie of movieList) {
+        const movieCard = createMovieCard(movie); //callerd from movie__card.js
+
+        movieListElem.querySelector(".slider-inner").appendChild(movieCard);
 
     }
 
-});
+    pageContent.appendChild(movieListElem);
+
+}
+
+
+
+
+search();

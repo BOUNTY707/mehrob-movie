@@ -3,6 +3,8 @@
 import { sidebar } from "./sidebar.js";
 import { api_key, imageBaseURL, fetchDataFromServer } from "./api.js";
 import { createMovieCard } from "./movie-card.js";
+import { search } from "./search.js";
+
 
 const pageContent = document.querySelector("[page-content]");
 
@@ -55,7 +57,6 @@ fetchDataFromServer(`https://api.themoviedb.org/3/genre/movie/list?api_key=${api
 
     fetchDataFromServer(`https://api.themoviedb.org/3/movie/popular?api_key=${api_key}&page=1`, heroBanner);
 })
-
 
 
 
@@ -216,3 +217,7 @@ const createMovieList = function ({ results: movieList }, title) {
     pageContent.appendChild(movieListElem);
 
 }
+
+
+
+search();
